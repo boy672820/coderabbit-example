@@ -8,6 +8,117 @@ reviews:
   poem: true
   review_status: true
   collapse_walkthrough: false
+  path_instructions: |
+    - path: "**/*.graphql"
+      instructions: |
+        ### 스키마 명명 규칙 (Schema Naming Conventions)
+        - 일관성 유지: 스키마 전반에 걸쳐 선택한 명명 규칙을 일관되게 유지해야 함.  
+        - 구체적인 이름 사용: 포괄적인 의미보다는 구체적이고 명확한 이름을 사용할 것.  
+        - 축약어 지양: 약어, 두문자어, 축약형은 가독성을 떨어뜨릴 수 있으므로 피할 것.
+
+        ### 케이싱 규칙 (Casing Conventions)
+        - camelCase: 필드명, 인자명, 지시자(directive) 이름 등에 사용  
+          ```graphql
+          type Query {
+            myCamelCaseFieldNames(myArgumentName: String): String
+          }
+
+          directive @myDirective on FIELD
+          ```
+        - PascalCase: 타입명, 열거형, 인터페이스, 유니온, 스칼라 타입 등에 사용  
+          ```graphql
+          type MyType { ... }
+
+          enum MyEnum { ... }
+
+          interface MyInterface { ... }
+
+          union MyUnion = ...
+
+          scalar MyScalar
+          ```
+        - SCREAMING_SNAKE_CASE: Enum 값에 사용  
+          ```graphql
+          enum MyEnum {
+            VALUE_ONE
+            VALUE_TWO
+          }
+          ```
+
+        ### 필드 네이밍 (Field Naming)
+        - Query 필드에는 `get`, `list`와 같은 동사 접두어를 사용하지 말 것
+          ```graphql
+          type Query {
+            # ❌ 잘못된 예
+            getProducts: [Product]
+
+            # ✅ 올바른 예
+            products: [Product]
+          }
+          ```
+        - 루트 필드와 중첩 필드 간 일관성 유지
+          ```graphql
+          # ❌ 잘못된 예
+          query Products {
+            getProducts {
+              id
+              getReviews {
+                content
+              }
+            }
+          }
+
+          # ✅ 올바른 예
+          query Products {
+            products {
+              id
+              reviews {
+                content
+              }
+            }
+          }
+          ```
+        - Mutation 필드는 반드시 동사로 시작할 것
+          ```graphql
+          type Mutation {
+            # ❌ 잘못된 예
+            customerAdd(input: AddCustomerInput): AddCustomerPayload!
+
+            # ✅ 올바른 예
+            addCustomer(input: AddCustomerInput): AddCustomerPayload!
+          }
+          ```
+
+        ### 타입 네이밍 (Type Naming)
+        - Input 타입: `Input` 접미사를 붙일 것  
+          ```graphql
+          input AddCustomerInput {
+            name: String!
+          }
+          ```
+        - Mutation 반환 타입: `Response` 또는 `Payload` 등의 일관된 접미사 사용  
+          ```graphql
+          type Mutation {
+            addCustomer(input: AddCustomerInput!): AddCustomerResponse!
+          }
+
+          type AddCustomerResponse {
+            success: Boolean!
+          }
+          ```
+
+        ### 네임스페이싱 (Namespacing)
+        - 도메인 간 이름 충돌을 방지하기 위해 접두어를 활용한 네임스페이싱 권장
+          - `PascalCase` 접두어 사용  
+            ```graphql
+            type StoreCustomer { ... }
+            type SiteCustomer { ... }
+            ```
+          - `Single_Underscore` 접두어 사용  
+            ```graphql
+            type Store_Customer { ... }
+            type Site_Customer { ... }
+            ```
   auto_review:
     enabled: true
     drafts: false
