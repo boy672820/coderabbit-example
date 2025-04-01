@@ -1,7 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { NotFoundException } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { SearchProductDto } from './dto/search-product.dto';
+import { UpdateProductDto } from './dto/update-product.dto';
 import { Product } from './product.entity';
 
 describe('ProductService', () => {
@@ -69,6 +71,81 @@ describe('ProductService', () => {
     });
   });
 
+  describe('update', () => {
+    it('should update a product', () => {
+      // Arrange
+      const createProductDto: CreateProductDto = {
+        name: '테스트 상품',
+        description: '테스트 상품 설명',
+        price: 10000,
+        stock: 100,
+      };
+      
+      const product = service.create(createProductDto);
+      const originalUpdatedAt = product.updatedAt;
+      
+      // 업데이트 전에 시간이 지나도록 잠시 대기
+      jest.advanceTimersByTime(1000);
+      
+      const updateProductDto: UpdateProductDto = {
+        name: '수정된 상품',
+        price: 20000,
+      };
+
+      // Act
+      const result = service.update(product.id, updateProductDto);
+
+      // Assert
+      expect(result.id).toBe(product.id);
+      expect(result.name).toBe(updateProductDto.name);
+      expect(result.description).toBe(createProductDto.description); // 수정되지 않은 필드
+      expect(result.price).toBe(updateProductDto.price);
+      expect(result.stock).toBe(createProductDto.stock); // 수정되지 않은 필드
+      expect(result.updatedAt).not.toEqual(originalUpdatedAt); // 업데이트 시간이 변경됨
+    });
+
+    it('should throw NotFoundException when product not found', () => {
+      // Arrange
+      const nonExistentId = 999;
+      const updateProductDto: UpdateProductDto = {
+        name: '수정된 상품',
+      };
+
+      // Act & Assert
+      expect(() => {
+        service.update(nonExistentId, updateProductDto);
+      }).toThrow(NotFoundException);
+      expect(() => {
+        service.update(nonExistentId, updateProductDto);
+      }).toThrow(`Product with ID ${nonExistentId} not found`);
+    });
+
+    it('should update only the provided fields', () => {
+      // Arrange
+      const createProductDto: CreateProductDto = {
+        name: '테스트 상품',
+        description: '테스트 상품 설명',
+        price: 10000,
+        stock: 100,
+      };
+      
+      const product = service.create(createProductDto);
+      
+      const updateProductDto: UpdateProductDto = {
+        price: 20000,
+      };
+
+      // Act
+      const result = service.update(product.id, updateProductDto);
+
+      // Assert
+      expect(result.name).toBe(createProductDto.name); // 수정되지 않음
+      expect(result.description).toBe(createProductDto.description); // 수정되지 않음
+      expect(result.price).toBe(updateProductDto.price); // 수정됨
+      expect(result.stock).toBe(createProductDto.stock); // 수정되지 않음
+    });
+  });
+
   describe('search', () => {
     beforeEach(() => {
       // 테스트용 상품 데이터 생성
@@ -78,21 +155,21 @@ describe('ProductService', () => {
         price: 1500000,
         stock: 10,
       });
-
+      
       service.create({
         name: '스마트폰',
         description: '최신 스마트폰',
         price: 1000000,
         stock: 20,
       });
-
+      
       service.create({
         name: '헤드폰',
         description: '무선 헤드폰',
         price: 300000,
         stock: 30,
       });
-
+      
       service.create({
         name: '키보드',
         description: '기계식 키보드',

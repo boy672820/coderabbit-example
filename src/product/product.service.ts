@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Product } from './product.entity';
 import { CreateProductDto } from './dto/create-product.dto';
 import { SearchProductDto } from './dto/search-product.dto';
+import { UpdateProductDto } from './dto/update-product.dto';
 
 @Injectable()
 export class ProductService {
@@ -23,6 +24,36 @@ export class ProductService {
 
   findOne(id: number): Product | undefined {
     return this.products.find((product) => product.id === id);
+  }
+
+  update(id: number, updateProductDto: UpdateProductDto): Product {
+    const product = this.findOne(id);
+
+    if (!product) {
+      throw new NotFoundException(`Product with ID ${id} not found`);
+    }
+
+    // 업데이트할 필드만 적용
+    if (updateProductDto.name !== undefined) {
+      product.name = updateProductDto.name;
+    }
+
+    if (updateProductDto.description !== undefined) {
+      product.description = updateProductDto.description;
+    }
+
+    if (updateProductDto.price !== undefined) {
+      product.price = updateProductDto.price;
+    }
+
+    if (updateProductDto.stock !== undefined) {
+      product.stock = updateProductDto.stock;
+    }
+
+    // 업데이트 시간 갱신
+    product.updatedAt = new Date();
+
+    return product;
   }
 
   search(searchProductDto: SearchProductDto): Product[] {

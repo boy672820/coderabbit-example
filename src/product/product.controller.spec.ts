@@ -1,8 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { NotFoundException } from '@nestjs/common';
 import { ProductController } from './product.controller';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { SearchProductDto } from './dto/search-product.dto';
+import { UpdateProductDto } from './dto/update-product.dto';
 import { Product } from './product.entity';
 
 describe('ProductController', () => {
@@ -105,6 +107,58 @@ describe('ProductController', () => {
       // Assert
       expect(findOneSpy).toHaveBeenCalledWith(1);
       expect(result).toBe(expectedProduct);
+    });
+  });
+
+  describe('update', () => {
+    it('should update a product', () => {
+      // Arrange
+      const productId = '1';
+      const updateProductDto: UpdateProductDto = {
+        name: '수정된 상품',
+        price: 20000,
+      };
+
+      const expectedProduct = new Product({
+        id: 1,
+        name: '수정된 상품',
+        description: '테스트 상품 설명',
+        price: 20000,
+        stock: 100,
+      });
+
+      const updateSpy = jest
+        .spyOn(service, 'update')
+        .mockReturnValue(expectedProduct);
+
+      // Act
+      const result = controller.update(productId, updateProductDto);
+
+      // Assert
+      expect(updateSpy).toHaveBeenCalledWith(1, updateProductDto);
+      expect(result).toBe(expectedProduct);
+    });
+
+    it('should handle NotFoundException from service', () => {
+      // Arrange
+      const productId = '999';
+      const updateProductDto: UpdateProductDto = {
+        name: '수정된 상품',
+      };
+
+      jest
+        .spyOn(service, 'update')
+        .mockImplementation(() => {
+          throw new NotFoundException(`Product with ID ${productId} not found`);
+        });
+
+      // Act & Assert
+      expect(() => {
+        controller.update(productId, updateProductDto);
+      }).toThrow(NotFoundException);
+      expect(() => {
+        controller.update(productId, updateProductDto);
+      }).toThrow(`Product with ID ${productId} not found`);
     });
   });
 
