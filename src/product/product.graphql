@@ -15,8 +15,28 @@ input CreateProductInput {
   stock: Int!
 }
 
+input ProductFilterInput {
+  name: String
+  minPrice: Float
+  maxPrice: Float
+  inStock: Boolean
+}
+
+input PaginationInput {
+  page: Int = 1
+  limit: Int = 10
+}
+
+type ProductsResponse {
+  items: [Product!]!
+  total: Int!
+  page: Int!
+  limit: Int!
+  hasMore: Boolean!
+}
+
 type Query {
-  products: [Product!]!
+  products(filter: ProductFilterInput, pagination: PaginationInput): ProductsResponse!
   product(id: Int!): Product
 }
 
