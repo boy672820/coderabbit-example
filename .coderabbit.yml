@@ -1,17 +1,17 @@
 # yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
-language: "ko-KR"
+language: 'ko-KR'
 early_access: false
 reviews:
-  profile: "chill"
+  profile: 'chill'
   request_changes_workflow: false
   high_level_summary: true
   poem: true
   review_status: true
   collapse_walkthrough: false
   path_filters:
-  - "!**/README.md"
+    - '!**/README.md'
   path_instructions:
-    - path: "**/*.graphql"
+    - path: '**/*.graphql'
       instructions: >
         ### 스키마 명명 규칙 (Schema Naming Conventions)
         - 일관성 유지: 스키마 전반에 걸쳐 선택한 명명 규칙을 일관되게 유지해야 함.  
