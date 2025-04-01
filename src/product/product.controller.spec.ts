@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ProductController } from './product.controller';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
+import { SearchProductDto } from './dto/search-product.dto';
 import { Product } from './product.entity';
 
 describe('ProductController', () => {
@@ -104,6 +105,75 @@ describe('ProductController', () => {
       // Assert
       expect(findOneSpy).toHaveBeenCalledWith(1);
       expect(result).toBe(expectedProduct);
+    });
+  });
+
+  describe('search', () => {
+    it('should search products with query parameters', () => {
+      // Arrange
+      const searchDto: SearchProductDto = {
+        name: '테스트',
+        minPrice: 5000,
+        maxPrice: 20000,
+        inStock: true,
+        page: 1,
+        limit: 10,
+      };
+
+      const expectedProducts = [
+        new Product({
+          id: 1,
+          name: '테스트 상품',
+          description: '테스트 상품 설명',
+          price: 10000,
+          stock: 100,
+        }),
+      ];
+
+      const searchSpy = jest
+        .spyOn(service, 'search')
+        .mockReturnValue(expectedProducts);
+
+      // Act
+      const result = controller.search(searchDto);
+
+      // Assert
+      expect(searchSpy).toHaveBeenCalledWith(searchDto);
+      expect(result).toBe(expectedProducts);
+    });
+
+    it('should handle empty search parameters', () => {
+      // Arrange
+      const searchDto: SearchProductDto = {};
+
+      const allProducts = [
+        new Product({
+          id: 1,
+          name: '상품 1',
+          description: '상품 1 설명',
+          price: 10000,
+          stock: 100,
+        }),
+        new Product({
+          id: 2,
+          name: '상품 2',
+          description: '상품 2 설명',
+          price: 20000,
+          stock: 200,
+        }),
+      ];
+
+      const searchSpy = jest
+        .spyOn(service, 'search')
+        .mockReturnValue(allProducts);
+
+      // Act
+      const result = controller.search(searchDto);
+
+      // Assert
+      expect(searchSpy).toHaveBeenCalledWith(searchDto);
+      expect(result).toBe(allProducts);
+      expect(result.length).toBe(2);
     });
   });
 });
